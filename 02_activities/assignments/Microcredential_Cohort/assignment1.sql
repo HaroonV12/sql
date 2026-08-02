@@ -126,7 +126,11 @@ LIMIT 24;
 at the farmer’s market by counting the vendor booth assignments per vendor_id. */
 --QUERY 8
 
-
+SELECT vendor_id,
+       COUNT(*) AS booth_rental_count
+FROM vendor_booth_assignments
+GROUP BY vendor_id
+ORDER BY vendor_id;
 
 
 --END QUERY
@@ -139,7 +143,19 @@ of customers for them to give stickers to, sorted by last name, then first name.
 HINT: This query requires you to join two tables, use an aggregate function, and use the HAVING keyword. */
 --QUERY 9
 
-
+SELECT c.customer_id,
+       c.customer_first_name,
+       c.customer_last_name,
+       SUM(cp.quantity * cp.cost_per_quantity) AS total_spent
+FROM customer AS c
+INNER JOIN customer_purchases AS cp
+    ON c.customer_id = cp.customer_id
+GROUP BY c.customer_id,
+         c.customer_first_name,
+         c.customer_last_name
+HAVING SUM(cp.quantity * cp.cost_per_quantity) > 2000
+ORDER BY c.customer_last_name,
+         c.customer_first_name;
 
 
 --END QUERY
@@ -158,6 +174,28 @@ VALUES(col1,col2,col3,col4,col5)
 */
 --QUERY 10
 
+DROP TABLE IF EXISTS temp.new_vendor;
+
+CREATE TEMP TABLE new_vendor AS
+SELECT *
+FROM vendor;
+
+INSERT INTO new_vendor (
+    vendor_id,
+    vendor_name,
+    vendor_type,
+    vendor_owner_first_name,
+    vendor_owner_last_name
+)
+VALUES (
+    10,
+    'Thomass Superfood Store',
+    'Fresh Focused',
+    'Thomas',
+    'Rosenthal'
+);
+
+
 
 
 
@@ -172,7 +210,11 @@ and year are!
 Limit to 25 rows of output. */
 --QUERY 11
 
-
+SELECT customer_id,
+       strftime('%m', market_date) AS month,
+       strftime('%Y', market_date) AS year
+FROM customer_purchases
+LIMIT 25;
 
 
 --END QUERY
@@ -186,7 +228,13 @@ but remember, STRFTIME returns a STRING for your WHERE statement...
 AND be sure you remove the LIMIT from the previous query before aggregating!! */
 --QUERY 12
 
-
+SELECT customer_id,
+       SUM(quantity * cost_per_quantity) AS total_spent
+FROM customer_purchases
+WHERE strftime('%m', market_date) = '04'
+  AND strftime('%Y', market_date) = '2022'
+GROUP BY customer_id
+ORDER BY customer_id;
 
 
 --END QUERY
